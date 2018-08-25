@@ -36,7 +36,7 @@ physeq = phyloseq(OTU, TAX)
 f.physeq = transform_sample_counts(physeq, function(x) x / sum(x)) # fractional abundance transformation of the data
 
 # import meta data
-md = read.table('sample_meta_data-d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
+md = read.table('sample_meta_data+d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
   
 #Let Phyloseq see the meta data
 sample_meta_data <- sample_data(md, errorIfNULL = TRUE)

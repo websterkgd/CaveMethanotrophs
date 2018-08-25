@@ -1,9 +1,8 @@
-#This r code plots the abundance of the methylocystaceae and methylococcales
-#against methane concentration
+#This script analyses ratios of methanotrophs
 
 rm(list=ls())
 getwd()
-setwd("C:/Users/websterkgd/GitHub/cave-mob/data_analyses")
+setwd('C:/Users/websterkgd/GitHub/CaveMethanotrophs/CaveMethanotrophData')
 
 #get the citation for the R package
 citation(package = "base", lib.loc = NULL)
@@ -34,7 +33,7 @@ physeq = phyloseq(OTU, TAX)
 f.physeq = transform_sample_counts(physeq, function(x) x / sum(x)) # fractional abundance transformation of the data
 
 # import meta data
-md = read.table('sample_meta_data-d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
+md = read.table('sample_meta_data+d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
   
 #Let Phyloseq see the meta data
 sample_meta_data <- sample_data(md, errorIfNULL = TRUE)
@@ -99,86 +98,29 @@ Fbei <- subset_taxa(AllCaves, Rank5=="Beijerinckiaceae") #Family
 Fbei.Gucs <- subset_taxa(Fbei, Rank6=="unclassified")
 Fbei.Guct <- subset_taxa(Fbei, Rank6=="uncultured")
 
+#total methanotrophs
+Tman <- merge_phyloseq(Fcys, Ococ, Gcel,V.Caci,Gcel) # pulling the total methanotrophic community
 
+#total methylotrophs
+Tlot <- merge_phyloseq(Fphl, Glib, Fbac) 
 
-## Numeric plots
+#ratios of methanotrophs to whole community
 
-ss.Fcys <-sample_sums(Fcys)
-ss.Fcys.f <- c(ss.Fcys[1:9],ss.Fcys[11:20],ss.Fcys[22:24],ss.Fcys[26:29],
-               ss.Fcys[31],ss.Fcys[33:42])
+MtW <- sample_sums(Tman)/sample_sums(f.physeq)
+MtW <- na.omit(MtW)
+is.na(MtW) <- sapply(MtW, is.infinite)
+MtW <- na.omit(MtW)
+MtW[MtW == 0] <- NA
+MtW <- na.omit(MtW)
+range(MtW) #1.1E-05 2.2E-02
+median(MtW) # 0.0023
+quantile(MtW, seq(0, 1, by=0.05)) #Q1 = 5.4E-04, Q3 = 4.7E-03
+boxplot(MtW)
+title(ylab = "Fractional Methanotroph Abundance")
 
-smd.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:9], 
-               sample_meta_data$CH4_conc.ppm.[11:20],
-               sample_meta_data$CH4_conc.ppm.[22:24],
-               sample_meta_data$CH4_conc.ppm.[26:29], 
-               sample_meta_data$CH4_conc.ppm.[31], 
-               sample_meta_data$CH4_conc.ppm.[33:42])
+#Testing MtW for normality
+plot(density(MtW))
+shapiro.test(MtW) #0.0019
+qqnorm(MtW)
+qqline(MtW, col = 2) 
 
-ss.Ococ <-sample_sums(Ococ)
-ss.Ococ.f <- c(ss.Ococ[1:5],ss.Ococ[7:9],ss.Ococ[12:15],ss.Ococ[17:20],ss.Ococ[23],
-               ss.Ococ[26],ss.Ococ[28:29],ss.Ococ[31],ss.Ococ[33:39],
-               ss.Ococ[41:42])
-
-smd.O.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:5], 
-                 sample_meta_data$CH4_conc.ppm.[7:9],
-                 sample_meta_data$CH4_conc.ppm.[12:15],
-                 sample_meta_data$CH4_conc.ppm.[17:20], 
-                 sample_meta_data$CH4_conc.ppm.[23], 
-                 sample_meta_data$CH4_conc.ppm.[26],
-                 sample_meta_data$CH4_conc.ppm.[28:29],
-                 sample_meta_data$CH4_conc.ppm.[31],
-                 sample_meta_data$CH4_conc.ppm.[33:39],
-                 sample_meta_data$CH4_conc.ppm.[41:42])
- 
-plot(log10(ss.Ococ.f)~smd.O.CH4.F) # re filter. 
-plot(log10(ss.Fcys.f)~smd.CH4.F)
-
-#export as 5.5in X 5.5in
-plot(smd.O.CH4.F,log10(ss.Ococ.f), yaxt = "n", ylab = "",
-     ylim =c(-6,-1),xlim=c(0,4),
-     xlab = expression('CH'[4]*' Concentration (ppmv)'),
-     col="gray", pch=16,cex =1.3) 
-points(smd.O.CH4.F,log10(ss.Ococ.f), col='black',pch=1, cex=1.3) 
-points(smd.CH4.F,log10(ss.Fcys.f), col='black',pch=16, cex=1.3) 
-title(ylab=expression("Relative Abundance"),
-      mgp=c(2.8,0,1), cex.lab=1)
-axis(side = 2, lwd.ticks = 1, cex.axis = 1, las = 1, tick =T,
-     labels=expression(10^-1,10^-2,10^-3,10^-4,10^-5,10^-6),
-     at=c(-1,-2,-3,-4,-5,-6))
-legend(2, -0.5, legend=c("Methylocystaceae", "Methylococcales"),
-       pch=c(16,16), col=c("black","gray"), cex=1, bty="n")
-legend(2, -0.5, legend=c("Methylocystaceae", "Methylococcales"),
-       pch=c(16,1), cex=1, bty="n")
-abline(lm(log10(ss.Ococ.f)~smd.O.CH4.F),lty=2)
-abline(lm(log10(ss.Fcys.f)~smd.CH4.F),lty=2)
-
-###Ancova Analysis for slopes
-
-mv.u.Fcys <-sample_sums(Fcys)
-mv.u.Fcys.f <- c(mv.u.Fcys[1:31],mv.u.Fcys[33:43])
-l.mv.u.Fcys.f <-log1p(mv.u.Fcys.f)
-
-mv.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:31],
-              sample_meta_data$CH4_conc.ppm.[33:43])
-
-mv.u.Ococ <-sample_sums(Ococ)
-mv.u.Ococ.f <- c(mv.u.Ococ[1:31],mv.u.Ococ[33:43])
-l.mv.u.Ococ.f <-log1p(mv.u.Ococ.f)
-
-mv.O.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:31],
-                sample_meta_data$CH4_conc.ppm.[33:43])
-
-#rel abund ~ CH4 + type + (CH4 x type)
-
-RA <- c(as.numeric(l.mv.u.Ococ.f),as.numeric(l.mv.u.Fcys.f))
-mn <- c(as.numeric(mv.O.CH4.F),as.numeric(mv.CH4.F))
-tp <- c(1:84)
-tp[1:42] <-1
-tp[43:84] <-2
-
-#ancova for slopes
-mod1 <- aov(RA~mn*tp)
-mod2 <- aov(RA~mn+tp)
-anova(mod1,mod2) # f =1.6 p =0.21
-
-#########

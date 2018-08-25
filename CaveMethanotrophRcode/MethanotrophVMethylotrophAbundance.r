@@ -1,8 +1,9 @@
-#This script analyses ratios of methylotrophs and methanotrophs
+#This script analyses the relative abundance of methylotrophs to methanotrophs
+# and of methylotrophs to methane concenta
 
 rm(list=ls())
 getwd()
-setwd('C:/Users/websterkgd/GitHub/CaveMethanotrophs')
+setwd(getwd())
 
 #get the citation for the R package
 citation(package = "base", lib.loc = NULL)
@@ -19,6 +20,7 @@ theme_set(theme_bw())
 # calling vegan
 #install.packages("vegan")
 require('vegan')
+require('stringi')
 
 #importing the shared file 
 OTU <- import_mothur(mothur_shared_file = 'CvMcrb03.bac.final.shared', parseFunction = parse_taxonomy_default)
@@ -29,27 +31,18 @@ TAX <- import_mothur(mothur_constaxonomy_file = 'CvMcrb03.bac.final.0.03.taxonom
 #create a physeq table for analysis
 physeq = phyloseq(OTU, TAX)
 
-#Creating transformations of the data 
+#Creating transformations of the data
 f.physeq = transform_sample_counts(physeq, function(x) x / sum(x)) # fractional abundance transformation of the data
 
 # import meta data
-md.d = read.table('sample_meta_data+d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
-md = read.table('sample_meta_data-d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
+md = read.table('sample_meta_data+d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
   
 #Let Phyloseq see the meta data
 sample_meta_data <- sample_data(md, errorIfNULL = TRUE)
 
 #Pruning NAs in the "design matrix" for analysis of distance on microbial communities
-sample_meta_data.d <- sample_data(md.d, errorIfNULL = TRUE)
-
 sample_meta_data$Location <- as.factor(sample_meta_data$Location)
 sample_meta_data$Bin.Loc <- as.factor(sample_meta_data$Bin.Loc)
-
-sample_meta_data.d$Location <- as.factor(sample_meta_data.d$Location)
-sample_meta_data.d$Bin.Loc <- as.factor(sample_meta_data.d$Bin.Loc)
-
-#remove na from meta data
-p.sample_meta_data.d <- na.omit(sample_meta_data.d) 
 
 #merge meta data with other data
 AllCaves <- merge_phyloseq(f.physeq, sample_meta_data)
@@ -108,29 +101,40 @@ Fbei <- subset_taxa(AllCaves, Rank5=="Beijerinckiaceae") #Family
 Fbei.Gucs <- subset_taxa(Fbei, Rank6=="unclassified")
 Fbei.Guct <- subset_taxa(Fbei, Rank6=="uncultured")
 
-#total methanotrophs
-Tman <- merge_phyloseq(Fcys, Ococ, Gcel,V.Caci,Gcel) # pulling the total methanotrophic community
+#Total methanotrophic community
+Tman <- merge_phyloseq(Fcys, Ococ, Gcel) # pulling the total methanotrophic community
 
-#total methylotrophs
-Tlot <- merge_phyloseq(Fphl, Glib, Fbac) 
+#Total methylotrophic community
+Tlot <- merge_phyloseq(Fphl, Glib, Fbac) # pulling the total methylotrophic community
 
-#ratios of methanotrophs to whole community
+#Methylotroph abundance vs Methanotroph Abundance
+#Vector of the relative abundance of methylotrophs and methanotrophs
+Tlot.ss <- sample_sums(Tlot)
+Tman.ss <- sample_sums(Tman)
 
-MtW <- sample_sums(Tman)/sample_sums(f.physeq)
-MtW <- na.omit(MtW)
-is.na(MtW) <- sapply(MtW, is.infinite)
-MtW <- na.omit(MtW)
-MtW[MtW == 0] <- NA
-MtW <- na.omit(MtW)
-range(MtW) #1.1E-05 2.2E-02
-median(MtW) # 0.0023
-quantile(MtW, seq(0, 1, by=0.05)) #Q1 = 5.4E-04, Q3 = 4.7E-03
-boxplot(MtW)
-title(ylab = "Fractional Methanotroph Abundance")
+#using a spearman's test to determine if the function is monotonic
+corr <- cor.test(x=Tman.ss, y=Tlot.ss, method = 'spearman')
+#S = 3849.1 rho = 0.71 p =1e-7; function is monotonic
 
-#Testing MtW for normality
-plot(density(MtW))
-shapiro.test(MtW) #0.0019
-qqnorm(MtW)
-qqline(MtW, col = 2) 
+###Creating plot of methanotroph abundance against methylotroph abundance
+#Export as 5in x 5in
+plot(Tlot.ss ~ Tman.ss,
+     xlab ="Relative Abundance Methanotrophs",
+     ylab ="Relative Abundance Methylotrophs",
+     pch=16, col="gray", cex=1.5)
+points(Tman.ss, Tlot.ss,
+       pch = 1, cex = 1.5, col = "black")
+text(0.0166,0.00395, expression(rho), srt =-10) 
+text(0.0189,0.004, as.expression("= 0.71")) 
+text(0.0183,0.0034, as.expression(italic(S)~"="~3849)) 
 
+#Methylotrophs against CH4 concentration
+Tlot.ss.fz <- Tlot.ss #create a new vector to filter zeros
+Tlot.ss.fz <- as.matrix(Tlot.ss.fz)
+Tlot.ss.fz[c(10,11,21,22,27,30,32,43)] <- NA
+CH4.ml.f <-md$CH4_conc.ppm.
+CH4.ml.f <- as.matrix(CH4.ml.f)
+CH4.ml.f[c(10,11,21,22,27,30,32,43)] <- NA
+mod.Tlot <- summary(lm(log10(Tlot.ss.fz)~CH4.ml.f)) #p0.001 r2 =0.27
+corr.mlvCH4 <- cor.test(x=CH4.ml.f, y=Tlot.ss.fz, method = 'spearman')
+#S = 8913.8, p = 0.15, rho = -0.24

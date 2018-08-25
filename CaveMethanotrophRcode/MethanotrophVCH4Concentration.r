@@ -1,9 +1,9 @@
-#This script analyses the relative abundance of methylotrophs to methanotrophs
-# and of methylotrophs to methane concenta
+#This r code plots the abundance of the methylocystaceae and methylococcales
+#against methane concentration
 
 rm(list=ls())
 getwd()
-setwd(getwd())
+setwd("C:/Users/websterkgd/GitHub/cave-mob/data_analyses")
 
 #get the citation for the R package
 citation(package = "base", lib.loc = NULL)
@@ -20,7 +20,6 @@ theme_set(theme_bw())
 # calling vegan
 #install.packages("vegan")
 require('vegan')
-require('stringi')
 
 #importing the shared file 
 OTU <- import_mothur(mothur_shared_file = 'CvMcrb03.bac.final.shared', parseFunction = parse_taxonomy_default)
@@ -31,16 +30,15 @@ TAX <- import_mothur(mothur_constaxonomy_file = 'CvMcrb03.bac.final.0.03.taxonom
 #create a physeq table for analysis
 physeq = phyloseq(OTU, TAX)
 
-#Creating transformations of the data
+#Creating transformations of the data 
 f.physeq = transform_sample_counts(physeq, function(x) x / sum(x)) # fractional abundance transformation of the data
 
 # import meta data
-md = read.table('sample_meta_data-d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
+md = read.table('sample_meta_data+d.txt', header = TRUE, sep = "", dec = ".", row.names = 1) 
   
 #Let Phyloseq see the meta data
 sample_meta_data <- sample_data(md, errorIfNULL = TRUE)
 
-#Pruning NAs in the "design matrix" for analysis of distance on microbial communities
 sample_meta_data$Location <- as.factor(sample_meta_data$Location)
 sample_meta_data$Bin.Loc <- as.factor(sample_meta_data$Bin.Loc)
 
@@ -101,40 +99,86 @@ Fbei <- subset_taxa(AllCaves, Rank5=="Beijerinckiaceae") #Family
 Fbei.Gucs <- subset_taxa(Fbei, Rank6=="unclassified")
 Fbei.Guct <- subset_taxa(Fbei, Rank6=="uncultured")
 
-#Total methanotrophic community
-Tman <- merge_phyloseq(Fcys, Ococ, Gcel) # pulling the total methanotrophic community
 
-#Total methylotrophic community
-Tlot <- merge_phyloseq(Fphl, Glib, Fbac) # pulling the total methylotrophic community
 
-#Methylotroph abundance vs Methanotroph Abundance
-#Vector of the relative abundance of methylotrophs and methanotrophs
-Tlot.ss <- sample_sums(Tlot)
-Tman.ss <- sample_sums(Tman)
+## Numeric plots
 
-#using a spearman's test to determine if the function is monotonic
-corr <- cor.test(x=Tman.ss, y=Tlot.ss, method = 'spearman')
-#S = 3849.1 rho = 0.71 p =1e-7; function is monotonic
+ss.Fcys <-sample_sums(Fcys)
+ss.Fcys.f <- c(ss.Fcys[1:9],ss.Fcys[11:20],ss.Fcys[22:24],ss.Fcys[26:29],
+               ss.Fcys[31],ss.Fcys[33:42])
 
-###Creating plot of methanotroph abundance against methylotroph abundance
-#Export as 5in x 5in
-plot(Tlot.ss ~ Tman.ss,
-     xlab ="Relative Abundance Methanotrophs",
-     ylab ="Relative Abundance Methylotrophs",
-     pch=16, col="gray", cex=1.5)
-points(Tman.ss, Tlot.ss,
-       pch = 1, cex = 1.5, col = "black")
-text(0.0166,0.00395, expression(rho), srt =-10) 
-text(0.0189,0.004, as.expression("= 0.71")) 
-text(0.0183,0.0034, as.expression(italic(S)~"="~3849)) 
+smd.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:9], 
+               sample_meta_data$CH4_conc.ppm.[11:20],
+               sample_meta_data$CH4_conc.ppm.[22:24],
+               sample_meta_data$CH4_conc.ppm.[26:29], 
+               sample_meta_data$CH4_conc.ppm.[31], 
+               sample_meta_data$CH4_conc.ppm.[33:42])
 
-#Methylotrophs against CH4 concentration
-Tlot.ss.fz <- Tlot.ss #create a new vector to filter zeros
-Tlot.ss.fz <- as.matrix(Tlot.ss.fz)
-Tlot.ss.fz[c(10,11,21,22,27,30,32,43)] <- NA
-CH4.ml.f <-md$CH4_conc.ppm.
-CH4.ml.f <- as.matrix(CH4.ml.f)
-CH4.ml.f[c(10,11,21,22,27,30,32,43)] <- NA
-mod.Tlot <- summary(lm(log10(Tlot.ss.fz)~CH4.ml.f)) #p0.001 r2 =0.27
-corr.mlvCH4 <- cor.test(x=CH4.ml.f, y=Tlot.ss.fz, method = 'spearman')
-#S = 8913.8, p = 0.15, rho = -0.24
+ss.Ococ <-sample_sums(Ococ)
+ss.Ococ.f <- c(ss.Ococ[1:5],ss.Ococ[7:9],ss.Ococ[12:15],ss.Ococ[17:20],ss.Ococ[23],
+               ss.Ococ[26],ss.Ococ[28:29],ss.Ococ[31],ss.Ococ[33:39],
+               ss.Ococ[41:42])
+
+smd.O.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:5], 
+                 sample_meta_data$CH4_conc.ppm.[7:9],
+                 sample_meta_data$CH4_conc.ppm.[12:15],
+                 sample_meta_data$CH4_conc.ppm.[17:20], 
+                 sample_meta_data$CH4_conc.ppm.[23], 
+                 sample_meta_data$CH4_conc.ppm.[26],
+                 sample_meta_data$CH4_conc.ppm.[28:29],
+                 sample_meta_data$CH4_conc.ppm.[31],
+                 sample_meta_data$CH4_conc.ppm.[33:39],
+                 sample_meta_data$CH4_conc.ppm.[41:42])
+ 
+plot(log10(ss.Ococ.f)~smd.O.CH4.F) # re filter. 
+plot(log10(ss.Fcys.f)~smd.CH4.F)
+
+#export as 5.5in X 5.5in
+plot(smd.O.CH4.F,log10(ss.Ococ.f), yaxt = "n", ylab = "",
+     ylim =c(-6,-1),xlim=c(0,4),
+     xlab = expression('CH'[4]*' Concentration (ppmv)'),
+     col="gray", pch=16,cex =1.3) 
+points(smd.O.CH4.F,log10(ss.Ococ.f), col='black',pch=1, cex=1.3) 
+points(smd.CH4.F,log10(ss.Fcys.f), col='black',pch=16, cex=1.3) 
+title(ylab=expression("Relative Abundance"),
+      mgp=c(2.8,0,1), cex.lab=1)
+axis(side = 2, lwd.ticks = 1, cex.axis = 1, las = 1, tick =T,
+     labels=expression(10^-1,10^-2,10^-3,10^-4,10^-5,10^-6),
+     at=c(-1,-2,-3,-4,-5,-6))
+legend(2, -0.5, legend=c("Methylocystaceae", "Methylococcales"),
+       pch=c(16,16), col=c("black","gray"), cex=1, bty="n")
+legend(2, -0.5, legend=c("Methylocystaceae", "Methylococcales"),
+       pch=c(16,1), cex=1, bty="n")
+abline(lm(log10(ss.Ococ.f)~smd.O.CH4.F),lty=2)
+abline(lm(log10(ss.Fcys.f)~smd.CH4.F),lty=2)
+
+###Ancova Analysis for slopes
+
+mv.u.Fcys <-sample_sums(Fcys)
+mv.u.Fcys.f <- c(mv.u.Fcys[1:31],mv.u.Fcys[33:43])
+l.mv.u.Fcys.f <-log1p(mv.u.Fcys.f)
+
+mv.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:31],
+              sample_meta_data$CH4_conc.ppm.[33:43])
+
+mv.u.Ococ <-sample_sums(Ococ)
+mv.u.Ococ.f <- c(mv.u.Ococ[1:31],mv.u.Ococ[33:43])
+l.mv.u.Ococ.f <-log1p(mv.u.Ococ.f)
+
+mv.O.CH4.F <- c(sample_meta_data$CH4_conc.ppm.[1:31],
+                sample_meta_data$CH4_conc.ppm.[33:43])
+
+#rel abund ~ CH4 + type + (CH4 x type)
+
+RA <- c(as.numeric(l.mv.u.Ococ.f),as.numeric(l.mv.u.Fcys.f))
+mn <- c(as.numeric(mv.O.CH4.F),as.numeric(mv.CH4.F))
+tp <- c(1:84)
+tp[1:42] <-1
+tp[43:84] <-2
+
+#ancova for slopes
+mod1 <- aov(RA~mn*tp)
+mod2 <- aov(RA~mn+tp)
+anova(mod1,mod2) # f =1.6 p =0.21
+
+#########
