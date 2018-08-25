@@ -23,6 +23,6 @@ vary in caves.
 
 ## Contributors
 
-[Dr. Kevin Webster]: (https://websterkgd.com/): Associate Research Scientist, [Planetary Science Institute] (https://www.psi.edu/about/staffpage/webster)
+[Dr. Kevin Webster] (http://websterkgd.com/): Associate Research Scientist, [Planetary Science Institute] (https://www.psi.edu/about/staffpage/webster)
 
 [Dr. Jay Lennon](http://www.indiana.edu/~microbes/people.php): Principle Investigator, Associate Professor, Department of Biology, Indiana University, Bloomington. Head of the [Lennon Lab](http://www.indiana.edu/~microbes/people.php).
