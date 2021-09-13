@@ -13,13 +13,14 @@ vary in caves.
 	* sample_meta_data+d.txt - A txt file of the collected meta data 
 
 * **CaveMethanotrophRcode:** - Analytical and figure generating code
-	* CoreMethanotrophBiome.r - Code to look at the core metanotroph microbiome
-	* DistanceDecay.r - This code examines the distance decay pattern of methanotrophs
-	* MethanotrophRatios.r - This code examines the rates of methanotrophs in the cave communities
-	* MethanotrophVCH4Concentration.r - This code examines how methanotroph relative abundance changes with CH4 concentration
-	* MethanotrophVDistanceEntrance.r - Code for examining how methanotroph relative abundance changes with distance to a cave entrance
-	* MetahnotrophVSoilGrainSize.r - Code for examing how methanotroph relative abundance changes with soil grain size
-	* SoilCH4CCA - Code for cannonical correspondance analysis of cave methanotroph communities
+	* DistDecay.r - This code examines the distance decay pattern of methanotrophs
+	* MethanoCommunityMeansCore.r - Code to look at the alpha and beta diversity, and the core metanotroph microbiome of caves
+	* MethanoMap.r - This code generates a spatial map of cave methanotroph abundance
+	* MethanoMineralCCA - Code for cannonical correspondance analysis of cave methanotroph communities against mineral abundance
+	* MethanoVsCHConc.r - This code examines how methanotroph relative abundance changes with CH4 concentration
+	* MethanoVsDistEnt.r - Code for examining how methanotroph relative abundance changes with distance to a cave entrance
+	* MetahnoVsSoilGrainSize.r - Code for examing how methanotroph relative abundance changes with soil grain size  
+	
 
 ## Contributors
 
