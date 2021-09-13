@@ -10,7 +10,7 @@ vary in caves.
 * **CaveMethanotrophData:** - Data files used in this research
 	* CvMcrb03_20190225.shared - A shared file describing the abundance of an OTU at a particular study site
 	* CvMcrb03_20190225.taxonomy - A taxonomy file of the identified sequences
-	* MethanotrophSearch.FASTA - A FASTA file of methanotroph 16S rRNA sequences from the literature
+	* MethanotrophSearch.fasta - A FASTA file of methanotroph 16S rRNA sequences from the literature
 	* MinAbnMatr.txt - A mineral abundance matrix by site
 	* NCBIPutMntrphIDCave_20190228 - Matches between OTUs from the shared file and known methanotrophs 
 	* sample_meta_data+d.txt - A txt file of the collected meta data 
