@@ -12,17 +12,18 @@ vary in caves.
 	* CvMcrb03_20190225.taxonomy - A taxonomy file of the identified sequences
 	* MethanotrophSearch.fasta - A FASTA file of methanotroph 16S rRNA sequences from the literature
 	* MinAbnMatr.txt - A mineral abundance matrix by site
-	* NCBIPutMntrphIDCave_20190228 - Matches between OTUs from the shared file and known methanotrophs 
+	* NCBIPutMntrphIDCave_20190616.txt - Matches between OTUs from the shared file and known methanotrophs 
 	* sample_meta_data+d.txt - A txt file of the collected meta data 
 
 * **CaveMethanotrophRcode:** - Analytical and figure generating code
-	* DistDecay.r - This code examines the distance decay pattern of methanotrophs
-	* MethanoCommunityMeansCore.r - Code to look at the alpha and beta diversity, and the core metanotroph microbiome of caves
-	* MethanoMap.r - This code generates a spatial map of cave methanotroph abundance
-	* MethanoMineralCCA - Code for cannonical correspondance analysis of cave methanotroph communities against mineral abundance
-	* MethanoVsCHConc.r - This code examines how methanotroph relative abundance changes with CH4 concentration
-	* MethanoVsDistEnt.r - Code for examining how methanotroph relative abundance changes with distance to a cave entrance
-	* MetahnoVsSoilGrainSize.r - Code for examing how methanotroph relative abundance changes with soil grain size  
+	* DistDecay_20220617.r - This code examines the distance decay pattern of methanotrophs
+	* MethanoExploration_20220616.r - Code to look at the alpha and beta diversity, and the core metanotroph microbiome of caves
+	* MethanoMap_20220617.r - This code generates a spatial map of cave methanotroph abundance
+	* MethanoMineralCCA_20220617 - Code for cannonical correspondance analysis of cave methanotroph communities against mineral abundance
+	* MethanoVsCHConc_20220617.r - This code examines how methanotroph relative abundance changes with CH4 concentration
+	* MethanoVsDistEnt_20220620.r - Code for examining how methanotroph relative abundance changes with distance to a cave entrance
+	* MetahnoVsSoilGrainSize_20220618.r - Code for examing how methanotroph relative abundance changes with soil grain size
+	* Slopetest_20220623.r - Code containing fuctions for distance decay analysis  
 	
 
 ## Contributors
