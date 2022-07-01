@@ -18,8 +18,8 @@ slopetest <- function(v1, v2, v3, v4) {
 slopetest2 <- function(v1, v2, v3, v4) {
   slope1 <- as.numeric(lm(v1 ~ v2)$coefficients[2][1])
   slope2 <- as.numeric(lm(v3 ~ v4)$coefficients[2][1])
-  j1 <- summary(lm(M.e.fr[,3] ~ M.e.fr[,1]))
-  j2 <- summary(lm(M.e.fr[,2] ~ M.e.fr[,1]))
+  j1 <- summary(lm(v1 ~ v2))
+  j2 <- summary(lm(v3 ~ v4))
   SE1 <- as.numeric(j1$coefficients[2,2])
   SE2 <- as.numeric(j2$coefficients[2,2])
   z <- (slope1 - slope2)/((SE1^2+SE2^2)^(0.5))
